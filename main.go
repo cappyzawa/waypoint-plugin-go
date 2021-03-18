@@ -2,9 +2,6 @@ package main
 
 import (
 	"github.com/cappyzawa/waypoint-plugin-go/builder"
-	"github.com/cappyzawa/waypoint-plugin-go/platform"
-	"github.com/cappyzawa/waypoint-plugin-go/registry"
-	"github.com/cappyzawa/waypoint-plugin-go/release"
 	sdk "github.com/hashicorp/waypoint-plugin-sdk"
 )
 
@@ -17,8 +14,5 @@ func main() {
 		// Comment out any components which are not
 		// required for your plugin
 		&builder.Builder{},
-		&registry.Registry{},
-		&platform.Platform{},
-		&release.ReleaseManager{},
 	))
 }
