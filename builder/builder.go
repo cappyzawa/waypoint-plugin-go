@@ -3,34 +3,36 @@ package builder
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/hashicorp/waypoint-plugin-sdk/terminal"
 )
 
 type BuildConfig struct {
-	Directory string `hcl:"directory,optional"`
+	OutputName string `hcl:"output_name,optional"`
+	Source     string `hcl:"source,optional"`
 }
 
 type Builder struct {
 	config BuildConfig
 }
 
-// Implement Configurable
+// Config returns configs
 func (b *Builder) Config() (interface{}, error) {
 	return &b.config, nil
 }
 
-// Implement ConfigurableNotify
+// ConfigSet validates config
 func (b *Builder) ConfigSet(config interface{}) error {
 	c, ok := config.(*BuildConfig)
 	if !ok {
 		// The Waypoint SDK should ensure this never gets hit
-		return fmt.Errorf("Expected *BuildConfig as parameter")
+		return fmt.Errorf("expected *BuildConfig as parameter")
 	}
 
 	// validate the config
-	if c.Directory == "" {
-		return fmt.Errorf("Directory must be set to a valid directory")
+	if _, err := os.Stat(c.Source); err != nil {
+		return fmt.Errorf("source folder does not exist")
 	}
 
 	return nil
