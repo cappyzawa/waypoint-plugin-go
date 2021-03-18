@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/exec"
+	"path"
 
 	"github.com/hashicorp/waypoint-plugin-sdk/terminal"
 )
@@ -38,7 +40,7 @@ func (b *Builder) ConfigSet(config interface{}) error {
 	return nil
 }
 
-// Implement Builder
+// BuildFunc is function for build
 func (b *Builder) BuildFunc() interface{} {
 	// return a function which will be called by Waypoint
 	return b.build
@@ -72,5 +74,32 @@ func (b *Builder) build(ctx context.Context, ui terminal.UI) (*Binary, error) {
 	defer u.Close()
 	u.Update("Building application")
 
-	return &Binary{}, nil
+	// setup the defaults
+	if b.config.OutputName == "" {
+		b.config.OutputName = "app"
+	}
+
+	if b.config.Source == "" {
+		b.config.Source = "./"
+	}
+
+	c := exec.Command(
+		"go",
+		"build",
+		"-o",
+		b.config.OutputName,
+		b.config.Source,
+	)
+
+	err := c.Run()
+	if err != nil {
+		u.Step(terminal.StatusError, "build failed")
+		return nil, err
+	}
+
+	u.Step(terminal.StatusOK, "Application build successfully")
+
+	return &Binary{
+		Location: path.Join(b.config.Source, b.config.OutputName),
+	}, nil
 }
